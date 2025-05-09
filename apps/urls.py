@@ -1,19 +1,21 @@
 
 from django.urls import path
-from apps.views import DebtListView, DebtCreatView, DebtFinish, DebtDeleteView, DebtUpdateView
+from apps.views import OrganicListView, CardCreatView, OrderSaveView, RegisterCreatView, LoginFormView, SendEmailForm, \
+    CodeFormView, LogoutView
 
-urlpatterns = [
-    path('debt-book/', DebtListView.as_view(), name='debt'),
-    path('debt-save/', DebtCreatView.as_view(), name='debt-save'),
-    path('debt-finish/<int:pk>', DebtFinish.as_view(), name='debt-finish'),
-    path('debt-update/<int:pk>', DebtUpdateView.as_view(), name='debt-update'),
-    path('debt-delete/<int:pk>', DebtDeleteView.as_view(), name='debt-delete'),
+urlpatterns=[
+    path('organic/',OrganicListView.as_view(),name='organic'),
+    path('card-save/',CardCreatView.as_view(),name='card-save'),
+    path('order-save',OrderSaveView.as_view(),name='order-save')
 ]
 
-
-
-
-
+urlpatterns += [
+    path('register', RegisterCreatView.as_view(), name='register'),
+    path('login/', LoginFormView.as_view(), name='login'),
+    path('',SendEmailForm.as_view(), name='email'),
+    path('check-code/',CodeFormView.as_view(), name='code'),
+    path('logout/', LogoutView.as_view(), name='logout')
+]
 
 
 
