@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qarz Daftarchasi</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+
+        table {
+            width: 60%;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+
+        .input-container {
+            margin-bottom: 20px;
+        }
+
+        input {
+            padding: 10px;
+            margin: 5px;
+        }
+
+        .button {
+            padding: 8px 15px;
+            margin: 5px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            border-radius: 5px;
+        }
+
+        .save-button {
+            background-color: blue;
+            color: white;
+        }
+
+        .delete-button {
+            background-color: red;
+            color: white;
+        }
+
+        .paid-button {
+            background-color: green;
+            color: white;
+        }
+
+        .editable {
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            padding: 5px;
+        }
+
+        .statistics {
+            background: #222;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            text-align: center;
+            color: #fff;
+        }
+
+        .statistics h2 {
+            color: #00bcd4;
+        }
+
+        .statistics p {
+            font-size: 18px;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Qarz Daftarchasi</h2>
+
+<div class="statistics">
+    <h2>📊 Qarz Statistikasi</h2>
+    <p><strong>Jami qarz:</strong> {{ total_debt }}som</p>
+    <p><strong>To‘langanlar:</strong> {{ paid_count }} ta</p>
+    <p><strong>To‘lanmaganlar:</strong> {{ unpaid_count }} ta</p>
+    <p><strong>Jami qarzdorlar:</strong> {{ total_debtors }} kishi</p>
+</div>
+
+<div class="input-container">
+    <input type="text" id="searchInput" placeholder="Telefon raqam bo‘yicha qidirish" onkeyup="searchTable()">
+</div>
+
+<form action="{% url 'debt-save' %}" method="post">
+    {% csrf_token %}
+    <div class="input-container">
+        <input type="text" placeholder="Ismni kiriting" name="name">
+        <input type="text" placeholder="Telefon raqamni kiriting kiriting" name="number">
+        <input type="number" placeholder="Qarz summasi" name="debt">
+        <button type="submit" class="button save-button">Qo‘shish</button>
+    </div>
+</form>
+{#<div>#}
+{#    <h3>{{ request.user.username }}</h3>#}
+{#    <a href="{% url 'logout' %}">#}
+{#        <button>Log Out</button>#}
+{#    </a>#}
+{#</div>#}
+
+<table id="debtTable">
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>Ism</th>
+        <th>Qarz miqdori</th>
+        <th>Telefon raqam</th>
+        <th>Status</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for debt in debts %}
+        <tr>
+            <td>{{ debt.pk }}</td>
+            <td>{{ debt.name }}</td>
+            <td>{{ debt.number }}</td>
+            {% if debt.status == 'tolandi' %}
+                <td>{{ debt.debt }}</td>
+            {% else %}
+                <td>
+                <form action="{% url 'debt-update' debt.pk %}" method="post">
+                    {% csrf_token %}
+                    <input type="text" name="debt" value="{{ debt.debt }}">
+                    <button type="submit">Yangilash</button>
+                </form>
+            {% endif %}
+            </td>
+            <td>{{ debt.status }}</td>
+            <td>
+                <form action="{% url 'debt-delete' debt.pk %}" method="post">
+                    {% csrf_token %}
+                    <a href="#">
+                        <button type="submit" class="button delete-button">O‘chirish</button>
+                    </a>
+                </form>
+                <form action="{% url 'debt-finish' debt.pk %}" method="post">
+                    {% csrf_token %}
+
+                    <button type="submit" class="button paid-button">
+                        {% if debt.status != DebtBook.StatusType.COMPLETED %}
+                            <input name="status" type="hidden" value="{{ DebtBook.StatusType.DEBT }}">
+                            To‘landi
+                        {% endif %}
+                    </button>
+                </form>
+
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<script>
+    function searchTable() {
+        let input = document.getElementById("searchInput").value.toLowerCase();
+        let table = document.getElementById("debtTable");
+        let rows = table.getElementsByTagName("tr");
+
+        for (let i = 1; i < rows.length; i++) {
+            let phoneCell = rows[i].getElementsByTagName("td")[2]; // 3-ustun (telefon raqami)
+            if (phoneCell) {
+                let phoneText = phoneCell.textContent || phoneCell.innerText;
+                if (phoneText.toLowerCase().indexOf(input) > -1) {
+                    rows[i].style.display = "";
+                } else {
+                    rows[i].style.display = "none";
+                }
+            }
+        }
+    }
+</script>
+</body>
+</html>
